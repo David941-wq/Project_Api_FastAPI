@@ -13,3 +13,4 @@ pymysql
 psycopg2
 cryptography
 python-dotenv
+email-validator
