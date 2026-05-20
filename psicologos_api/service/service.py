@@ -80,7 +80,7 @@ class UsuarioService:
         usuario = self.usuario_repository.login(
             db,
             datos.nombre,
-            datos.contrasena
+            datos.contraseña
         )
         if not usuario:
             raise ValueError(
