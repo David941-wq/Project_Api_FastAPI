@@ -7,7 +7,7 @@ from seed import populate_database
 Base.metadata.create_all(bind=engine)
 
 populate_database()
-
+#algo mas xD xD
 app = FastAPI()
 
 app.add_middleware(
