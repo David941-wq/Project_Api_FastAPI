@@ -30,7 +30,7 @@ class PsicologoService:
         return self.psicologo_repository.listar_psicologos(db)
     
     def obtener_psicologo_por_id(self, db, psicologo_id):
-        psicologo = self.psicologo_repository.obtener_citas_by_psicologo_id(db, psicologo_id)
+        psicologo = self.psicologo_repository.obtener_psicologo_by_id(db, psicologo_id)
         if not psicologo:
             raise ValueError("Psicólogo no encontrado")
         return psicologo
