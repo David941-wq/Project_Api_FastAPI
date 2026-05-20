@@ -20,6 +20,9 @@ class UsuarioRepository:
 
     def listar_usuarios(self, db: Session):
         return db.query(Usuario).all()
+    
+    def login(self, db, nombre, contraseña):
+        return db.query(Usuario).filter(Usuario.nombre == nombre, Usuario.contraseña == contraseña).first()
 
     def eliminar_usuario(self, db: Session, id: int):
         usuario = db.query(Usuario).filter(Usuario.id == id).first()

@@ -74,6 +74,16 @@ def obtener_usuario(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail="Error interno del servidor")
+    
+@router.post("/login")
+def login(nombre: str, contraseña: str, db: Session = Depends(get_db)):
+    try:
+        usuario = Usuarios.login(db, nombre, contraseña)
+        if not usuario:
+            raise HTTPException(status_code=401, detail="Credenciales inválidas")
+        return {"message": "Inicio de sesión exitoso", "usuario_id": usuario.id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
 
 #-------------------------------------------------------------------
 # Citas
