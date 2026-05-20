@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date,Time, ForeignKey
+from sqlalchemy import Column, Integer, String, Date,Time,Text, ForeignKey
 from sqlalchemy.orm import relationship
 from Core.database import Base
 
@@ -67,6 +67,9 @@ class Cita(Base):
     __tablename__ = "citas"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    nombre_paciente = Column(String(100), nullable=False)
+    correo = Column(String(255), nullable=False)
+    motivo = Column(Text, nullable=True)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"))
     psicologo_id = Column(Integer, ForeignKey("psicologos.id"))
     
