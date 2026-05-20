@@ -2,7 +2,7 @@ pydantic
 FastAPI
 uvicorn
 sqlalchemy
-pymysql
+psycopg2-binary
 cryptography
 python-dotenv
 email-validator
