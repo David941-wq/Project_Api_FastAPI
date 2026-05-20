@@ -1,16 +1,8 @@
-pandas
-openpyxl
-pygame
-tzdata
-six
-numpy
-python-dateutil
-pandas
+pydantic
 FastAPI
 uvicorn
 sqlalchemy
 pymysql
-psycopg2
 cryptography
 python-dotenv
 email-validator
