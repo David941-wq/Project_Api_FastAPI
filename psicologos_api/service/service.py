@@ -76,6 +76,19 @@ class UsuarioService:
             return True
         return False
     
+    def login(self, db, datos):
+        usuario = self.usuario_repository.login(
+            db,
+            datos.nombre,
+            datos.contrasena
+        )
+        if not usuario:
+            raise ValueError(
+                "Credenciales inválidas"
+            )
+
+        return usuario
+    
     
 class NumeroEmergenciaService:
     def __init__(self):
