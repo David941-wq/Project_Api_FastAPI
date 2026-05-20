@@ -27,7 +27,7 @@ class PsicologoService:
         return self.psicologo_repository.crear_psicologo(db, psicologo_data)
     
     def Listar_psicologos(self, db):
-        return self.psicologo_repository.get_psicologos(db)
+        return self.psicologo_repository.listar_psicologos(db)
     
     def obtener_psicologo_por_id(self, db, psicologo_id):
         psicologo = self.psicologo_repository.obtener_citas_by_psicologo_id(db, psicologo_id)
