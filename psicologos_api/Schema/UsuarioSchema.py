@@ -26,6 +26,7 @@ class UsuarioResponse(BaseModel):
     id: int
     nombre: str
     correo: EmailStr
+    contraseña: str
     ubicacion: str
     telefono: Optional[str] = None
     localidad_id: int
