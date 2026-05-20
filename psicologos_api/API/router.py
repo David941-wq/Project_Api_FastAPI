@@ -7,6 +7,7 @@ from Schema.PsicologoSchema import PsicologoCreate, PsicologoResponse
 from Schema.UsuarioSchema import UsuarioCreate, UsuarioResponse
 from Schema.CitasSchema import CitasCreate, CitasResponse
 from Schema.NumerEmergencia import NumeroEmergenciaResponse
+from Schema.loginSchema import LoginResponse, LoginCreate
 
 from service.service import PsicologoService, UsuarioService, CitasService, NumeroEmergenciaService
 
@@ -75,12 +76,16 @@ def obtener_usuario(id: int, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail="Error interno del servidor")
     
-@router.post("/login")
-def login(datos: UsuarioResponse,db: Session = Depends(get_db)
+@router.post("/login", response_model=LoginResponse)
+def login(datos: LoginCreate,db: Session = Depends(get_db)
 ):
     try:
 
-        return Usuarios.login(db, datos)
+        usuario = Usuarios.login(db, datos)
+        return {
+            "usuario_id": usuario.id,
+            "nombre": usuario.nombre
+        }
 
     except ValueError as e:
 
