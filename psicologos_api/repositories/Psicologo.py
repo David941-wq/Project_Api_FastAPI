@@ -16,7 +16,7 @@ class PsicologoRepository:
     def listar_psicologos(self, db: Session):
         return db.query(Psicologo).all()
 
-    def obtener_psicologo_by_id(self, psicologo_id: int, db: Session):
+    def obtener_psicologo_by_id(self, db: Session, psicologo_id: int):
         return db.query(Psicologo).filter(Psicologo.id == psicologo_id).first()
     
     def obtener_citas_by_psicologo_id(self, db: Session, psicologo_id: int):
