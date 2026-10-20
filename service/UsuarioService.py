@@ -21,7 +21,7 @@ class UsuarioService:
         nuevo_usuario = Usuario(
             nombre=usuario_data.nombre,
             correo=usuario_data.correo,
-            password_hash=hash_password(usuario_data.contraseña),
+            password_hash=hash_password(usuario_data.password),
             telefono=usuario_data.telefono,
             localidad_id=usuario_data.localidad_id
         )
