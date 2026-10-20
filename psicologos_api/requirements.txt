@@ -1,8 +1,0 @@
-pydantic
-FastAPI
-uvicorn
-sqlalchemy
-psycopg2-binary
-cryptography
-python-dotenv
-email-validator
