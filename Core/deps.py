@@ -6,7 +6,7 @@ from Core.database import get_db
 from repositories.Usuario import UsuarioRepository
 from repositories.Psicologo import PsicologoRepository
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 
 def obtener_usuario_actual(token: str = Depends(oauth2_scheme), db=Depends(get_db)):
