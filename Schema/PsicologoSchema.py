@@ -1,28 +1,28 @@
-from pydantic import BaseModel, EmailStr, field_validator
-from sqlalchemy.orm import Session
-from Models.CitasModels import Cita
-from Core.database import SessionLocal
-from typing import List, Optional
+from pydantic import BaseModel, EmailStr
+
 
 class PsicologoBase(BaseModel):
     nombre: str
-    descripcion: str
+    descripcion: str | None = None
     correo: EmailStr
-    contraseña: str
-    ubicacion: str
-    imagen: str
-    especialidad: Optional[str] = None
-    @field_validator('correo')
-    def validacion_correo(cls, value):
-        if '@' not in value:
-            raise ValueError('El correo electrónico no es válido')
-        return value
-    
-class PsicologoCreate(PsicologoBase):
-    pass
+    localidad_id: int
+    especialidad: str
+    imagen: str | None = None
 
-class PsicologoResponse(PsicologoBase): 
+
+class PsicologoCreate(PsicologoBase):
+    contraseña: str
+
+
+class PsicologoResponse(BaseModel):
     id: int
+    nombre: str
+    descripcion: str | None = None
+    correo: EmailStr
+    localidad_id: int
+    especialidad: str
+    imagen: str | None = None
+    activo: bool
 
     class Config:
         from_attributes = True

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 
 class LocalidadBase(BaseModel):
@@ -13,4 +13,5 @@ class LocalidadCreate(LocalidadBase):
 class LocalidadResponse(LocalidadBase):
     id: int
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True

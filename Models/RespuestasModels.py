@@ -11,10 +11,10 @@ class RespuestaComentario(Base):
     activo = Column(Boolean, nullable=False, default=True)
 
     comentario_id = Column(Integer, ForeignKey("comentarios.id", ondelete="CASCADE"), nullable=False, index=True)
-    comentario = relationship("Comentario")
+    comentario = relationship("Comentario", back_populates="respuestas")
 
-    usuario_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    usuario = relationship("User")
+    usuario_id = Column(Integer, ForeignKey("usuarios.id", ondelete="CASCADE"), nullable=False, index=True)
+    usuario = relationship("Usuario", back_populates="respuestas")
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

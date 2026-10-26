@@ -8,17 +8,19 @@ class Comentario(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     contenido = Column(Text, nullable=False)
-    activo = Column(Boolean, nullable=False, default=True)  # para "borrado lógico"
+    activo = Column(Boolean, nullable=False, default=True)
 
-    usuario_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    usuario = relationship("User")
+    usuario_id = Column(Integer, ForeignKey("usuarios.id", ondelete="CASCADE"), nullable=False, index=True)
+    usuario = relationship("Usuario", back_populates="comentarios")
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     respuestas = relationship(
         "RespuestaComentario",
-        cascade="all, delete-orphan"
+        back_populates="comentario",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
     def __repr__(self):

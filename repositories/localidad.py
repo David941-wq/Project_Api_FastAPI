@@ -1,26 +1,29 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from Models.LocalidadModels import Localidad
 
-DataLocalidad = Localidad
 
 class LocalidadRepository:
 
-    def obtener_localidad(self, db: Session, id: int) -> DataLocalidad | None:
-        return db.query(DataLocalidad).filter(DataLocalidad.id == id).first()
+    def obtener_por_id(self, db: Session, localidad_id: int) -> Localidad | None:
+        return db.query(Localidad).filter(Localidad.id == localidad_id).first()
 
-    def obtener_por_nombre(self, db: Session, nombre: str) -> DataLocalidad | None:
-        return db.query(DataLocalidad).filter(DataLocalidad.nombre == nombre).first()
+    def obtener_por_nombre(self, db: Session, nombre: str) -> Localidad | None:
+        return db.query(Localidad).filter(Localidad.nombre == nombre).first()
 
-    def listar_localidades(self, db: Session) -> list[DataLocalidad]:
-        return db.query(DataLocalidad).all()
+    def listar_localidades(self, db: Session) -> list[Localidad]:
+        return db.query(Localidad).all()
 
-    def obtener_con_numeros_emergencia(self, db: Session, localidad_id: int) -> DataLocalidad | None:
-        return db.query(DataLocalidad).filter(DataLocalidad.id == localidad_id).first()
+    def obtener_con_numeros_emergencia(self, db: Session, localidad_id: int) -> Localidad | None:
+        return (
+            db.query(Localidad)
+            .options(joinedload(Localidad.numeros_emergencia))
+            .filter(Localidad.id == localidad_id)
+            .first()
+        )
 
-    def crear_localidad(self, db: Session, localidad: DataLocalidad) -> DataLocalidad:
+    def crear_localidad(self, db: Session, localidad: Localidad) -> Localidad:
+        """Solo para el script de seed, no expuesto vía endpoint público."""
         db.add(localidad)
         db.commit()
         db.refresh(localidad)
         return localidad
-
-    

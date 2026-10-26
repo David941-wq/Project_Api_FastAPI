@@ -1,15 +1,14 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
-class LoginBase(BaseModel):
-    nombre: str
+
+class LoginCreate(BaseModel):
+    correo: EmailStr
     contraseña: str
 
-class LoginCreate(LoginBase):
-    pass
 
 class LoginResponse(BaseModel):
-    usuario_id: int
+    access_token: str
+    token_type: str
+    usuario_id: int | None = None
+    psicologo_id: int | None = None
     nombre: str
-
-    class Config:
-        from_attributes = True

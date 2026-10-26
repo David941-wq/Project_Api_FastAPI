@@ -1,19 +1,20 @@
 from pydantic import BaseModel
-from datetime import date, time
+from datetime import date as date_type, time as time_type
 from Models.CitasModels import EstadoCita
 
-# terminar los schemas para que las peticiones den resultados optimos
 
 class CitasBase(BaseModel):
-    date: date
-    hour: time
+    date: date_type
+    hour: time_type
     description: str | None = None
+
 
 class CitasCreate(CitasBase):
     psicologo_id: int
-    pass
+    # usuario_id NO va aquí: se obtiene del token (usuario_actual)
 
-class CitasResponse(BaseModel):
+
+class CitasResponse(CitasBase):
     id: int
     status: EstadoCita
     usuario_id: int
@@ -22,6 +23,7 @@ class CitasResponse(BaseModel):
     class Config:
         from_attributes = True
 
-class CitasUpdate(BaseModel):
-    date: date 
-    hour: time | None = None
+
+class CitaFechaUpdate(BaseModel):
+    date: date_type
+    hour: time_type | None = None
