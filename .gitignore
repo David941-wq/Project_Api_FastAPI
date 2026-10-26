@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # Python
+=======
+# Byte-compiled / optimized / DLL files
+>>>>>>> 77ff495f557ed28c23934c249dea37e4429224d3
 __pycache__/
 *.py[cod]
 *$py.class

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class UsuarioBase(BaseModel):
@@ -9,7 +9,7 @@ class UsuarioBase(BaseModel):
 
 
 class UsuarioCreate(UsuarioBase):
-    contraseña: str
+    password: str = Field(min_length=6)
 
 
 class UsuarioResponse(BaseModel):

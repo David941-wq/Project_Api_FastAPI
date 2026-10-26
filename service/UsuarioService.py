@@ -21,7 +21,7 @@ class UsuarioService:
         nuevo_usuario = Usuario(
             nombre=usuario_data.nombre,
             correo=usuario_data.correo,
-            password_hash=hash_password(usuario_data.contraseña),
+            password_hash=hash_password(usuario_data.password),
             telefono=usuario_data.telefono,
             localidad_id=usuario_data.localidad_id
         )
@@ -38,7 +38,7 @@ class UsuarioService:
 
     def login(self, db, datos):
         usuario = self.usuario_repository.obtener_por_correo(db, datos.correo)
-        if not usuario or not verify_password(datos.contraseña, usuario.password_hash):
+        if not usuario or not verify_password(datos.password, usuario.password_hash):
             raise CustomException("Credenciales inválidas", 401)
 
         token = create_access_token(data={"sub": str(usuario.id), "rol": "usuario"})

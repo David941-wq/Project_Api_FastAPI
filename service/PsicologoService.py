@@ -25,7 +25,7 @@ class PsicologoService:
             nombre=psicologo_data.nombre,
             descripcion=psicologo_data.descripcion,
             correo=psicologo_data.correo,
-            password_hash=hash_password(psicologo_data.contraseña),
+            password_hash=hash_password(psicologo_data.password),
             localidad_id=psicologo_data.localidad_id,
             especialidad=psicologo_data.especialidad,
             imagen=psicologo_data.imagen,
@@ -49,7 +49,7 @@ class PsicologoService:
 
     def login(self, db, datos):
         psicologo = self.psicologo_repository.obtener_psicologo_por_correo(db, datos.correo)
-        if not psicologo or not verify_password(datos.contraseña, psicologo.password_hash):
+        if not psicologo or not verify_password(datos.password, psicologo.password_hash):
             raise CustomException("Credenciales inválidas", 401)
 
         token = create_access_token(data={"sub": str(psicologo.id), "rol": "psicologo"})

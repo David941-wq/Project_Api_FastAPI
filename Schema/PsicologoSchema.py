@@ -11,7 +11,7 @@ class PsicologoBase(BaseModel):
 
 
 class PsicologoCreate(PsicologoBase):
-    contraseña: str
+    password: str
 
 
 class PsicologoResponse(BaseModel):
