@@ -9,7 +9,6 @@ class Comentario(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     contenido = Column(Text, nullable=False)
     activo = Column(Boolean, nullable=False, default=True)
-
     usuario_id = Column(Integer, ForeignKey("usuarios.id", ondelete="CASCADE"), nullable=False, index=True)
     usuario = relationship("Usuario", back_populates="comentarios")
 

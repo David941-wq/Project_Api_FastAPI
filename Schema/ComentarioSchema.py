@@ -17,6 +17,16 @@ class ComentarioResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class ComentarioConLikesResponse(ComentarioResponse):
+    likes: int = 0
+    liked: bool = False
+
+
+class LikeResponse(BaseModel):
+    comentario_id: int
+    likes: int
+    liked: bool
+
 
 class RespuestaComentarioCreate(BaseModel):
     contenido: str

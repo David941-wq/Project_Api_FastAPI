@@ -7,6 +7,7 @@ from repositories.Usuario import UsuarioRepository
 from repositories.Psicologo import PsicologoRepository
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
+oauth2_opcional = OAuth2PasswordBearer(tokenUrl="/login", auto_error=False)
 
 
 def obtener_usuario_actual(token: str = Depends(oauth2_scheme), db=Depends(get_db)):
@@ -43,3 +44,16 @@ def obtener_psicologo_actual(token: str = Depends(oauth2_scheme), db=Depends(get
     if not psicologo:
         raise CustomException("Psicólogo no encontrado", 404)
     return psicologo
+
+def obtener_usuario_opcional(token: str | None = Depends(oauth2_opcional), db=Depends(get_db)):
+    """Devuelve el usuario si llega un token válido; si no, None (visitante)."""
+    if not token:
+        return None
+    try:
+        payload = decode_access_token(token)
+    except ValueError:
+        return None
+
+    if payload.get("rol") != "usuario" or payload.get("sub") is None:
+        return None
+    return UsuarioRepository().obtener_por_id(db, int(payload["sub"]))

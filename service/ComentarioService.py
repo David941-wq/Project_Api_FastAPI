@@ -1,11 +1,13 @@
 from repositories.Comentario import ComentarioRepository
 from Models.ComentariosModels import Comentario
 from Core.exception import CustomException
+from repositories.Like import LikeRepository
 
 
 class ComentarioService:
     def __init__(self):
         self.comentario_repository = ComentarioRepository()
+        self.like_repository = LikeRepository()
 
     def crear_comentario(self, db, comentario_data, usuario_actual):
         nuevo_comentario = Comentario(
@@ -16,6 +18,28 @@ class ComentarioService:
 
     def listar_comentarios(self, db, solo_activos: bool = True):
         return self.comentario_repository.listar_comentarios(db, solo_activos)
+
+    def listar_cometarios_con_likes(self, db, usuario_actual=None):
+        comentarios = self.comentario_repository.listar_comentarios(db)
+        ids = [c.id for c in comentarios]
+        conteos = self.like_repository.contar_por_comentarios(db, ids)
+        mios = (
+            self.like_repository.ids_con_like_de_usuario(db, usuario_actual.id, ids)
+            if usuario_actual
+            else set()
+        )
+        return [
+            {
+                "id": c.id,
+                "contenido": c.contenido,
+                "activo": c.activo,
+                "usuario_id": c.usuario_id,
+                "created_at": c.created_at,
+                "likes": conteos.get(c.id, 0),
+                "liked": c.id in mios
+            }
+            for c in comentarios
+        ]
 
     def obtener_comentario_por_id(self, db, comentario_id):
         comentario = self.comentario_repository.obtener_comentario_por_id(db, comentario_id)

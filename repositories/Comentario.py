@@ -49,3 +49,4 @@ class ComentarioRepository:
             db.commit()
             db.refresh(comentario)
         return comentario
+

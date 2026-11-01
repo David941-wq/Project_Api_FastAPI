@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from Core.database import get_db
-from Core.deps import obtener_usuario_actual, obtener_psicologo_actual
+from Core.deps import obtener_usuario_actual, obtener_psicologo_actual,obtener_usuario_opcional
 from typing import List
 
 from Schema.PsicologoSchema import PsicologoCreate, PsicologoResponse
@@ -11,7 +11,7 @@ from Schema.NumerEmergencia import NumeroEmergenciaResponse
 from Schema.loginSchema import LoginResponse, LoginCreate
 from Schema.LocalidadSchema import LocalidadResponse
 from Schema.ComentarioSchema import (
-    ComentarioCreate, ComentarioResponse,
+    ComentarioCreate, ComentarioResponse, ComentarioConLikesResponse, LikeResponse,
     RespuestaComentarioCreate, RespuestaComentarioResponse,
     ContenidoUpdate
 )
@@ -23,6 +23,7 @@ from service.NumeroEService import NumeroEService
 from service.LocalidadService import LocalidadService
 from service.ComentarioService import ComentarioService
 from service.RespuestaComentarioService import RespuestaComentarioService
+from service.LikeService import LikeService
 
 router = APIRouter()
 
@@ -33,6 +34,7 @@ numero_e_service = NumeroEService()
 localidad_service = LocalidadService()
 comentario_service = ComentarioService()
 respuesta_service = RespuestaComentarioService()
+like_Service = LikeService()
 
 # -------------------------------------------------------------------
 # Psicólogos
@@ -164,9 +166,17 @@ def crear_comentario(
 ):
     return comentario_service.crear_comentario(db, data, usuario_actual)
 
-@router.get("/comentarios", response_model=List[ComentarioResponse], tags=["Comentarios"])
-def listar_comentarios(db: Session = Depends(get_db)):
-    return comentario_service.listar_comentarios(db)
+@router.get("/comentarios", response_model=List[ComentarioConLikesResponse], tags=["Comentarios"])
+def listar_comentarios(usuario_actual=Depends(obtener_usuario_opcional), db: Session = Depends(get_db)):
+    return comentario_service.listar_cometarios_con_likes(db, usuario_actual)
+
+@router.post("/comentarios/{id}/Like", response_model=LikeResponse, tags=["Comentarios"])
+def alternar_like(
+    id: int,
+    usuario_actual=Depends(obtener_usuario_actual),
+    db: Session = Depends(get_db)
+):
+    return like_Service.alternar_like(db, id, usuario_actual)
 
 @router.get("/comentarios/{id}", response_model=ComentarioResponse, tags=["Comentarios"])
 def obtener_comentario(id: int, db: Session = Depends(get_db)):
