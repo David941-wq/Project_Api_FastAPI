@@ -62,3 +62,11 @@ class PsicologoRepository:
             db.commit()
             db.refresh(psicologo)
         return psicologo
+
+    def actualizar_foto_perfil(self, db: Session, psicologo_id: int, url_foto: str):
+        psicologo = db.query(Psicologo).filter(Psicologo.id == psicologo_id).first()
+        if psicologo:
+            psicologo.imagen = url_foto
+            db.commit()
+            db.refresh(psicologo)
+        return psicologo

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, UploadFile, File, status
 from sqlalchemy.orm import Session
 from Core.database import get_db
 from Core.deps import obtener_usuario_actual, obtener_psicologo_actual,obtener_usuario_opcional
@@ -62,6 +62,12 @@ def obtener_citas_mias_psicologo(
 @router.post("/psicologos/login", response_model=LoginResponse, tags=["Psicólogos"])
 def login_psicologo(datos: LoginCreate, db: Session = Depends(get_db)):
     return psicologo_service.login(db, datos)
+
+@router.post("/psicologos/me/foto", response_model=PsicologoResponse, tags=["Psicólogos"])
+async def subir_foto(file: UploadFile = File(...),psicologo_actual = Depends(obtener_psicologo_actual),
+    db: Session = Depends(get_db)):
+
+    return await psicologo_service.actualizar_foto_perfil(db,psicologo_actual.id,file)
 
 # -------------------------------------------------------------------
 # Usuarios
