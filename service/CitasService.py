@@ -1,6 +1,8 @@
 from repositories.Citas import CitaRepository
 from repositories.Psicologo import PsicologoRepository
 from Models.CitasModels import Cita
+from Models.UserModels import Usuario
+from Models.PsicologosModels import Psicologo
 from Core.exception import CustomException
 
 
@@ -40,6 +42,18 @@ class CitasService:
         cita = self.cita_repository.obtener_por_id(db, cita_id)
         if not cita:
             raise CustomException("Cita no encontrada", 404)
+        return cita
+
+    def obtener_cita_de_cuenta(self, db, cita_id, cuenta):
+        cita = self.obtener_cita_por_id(db, cita_id)
+        if isinstance(cuenta, Usuario):
+            es_suya = cita.usuario_id == cuenta.id
+        elif isinstance(cuenta, Psicologo):
+            es_suya = cita.psicologo_id == cuenta.id
+        else:
+            es_suya = False
+        if not es_suya:
+            raise CustomException("No tienes permiso para acceder a esta cita", 403)
         return cita
 
     def cancelar_cita(self, db, cita_id, usuario_actual):

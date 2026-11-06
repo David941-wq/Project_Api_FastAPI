@@ -57,3 +57,25 @@ def obtener_usuario_opcional(token: str | None = Depends(oauth2_opcional), db=De
     if payload.get("rol") != "usuario" or payload.get("sub") is None:
         return None
     return UsuarioRepository().obtener_por_id(db, int(payload["sub"]))
+
+def obtener_cuenta_autenticada(token: str = Depends(oauth2_scheme), db=Depends(get_db)):
+    try:
+        payload = decode_access_token(token)
+    except ValueError:
+        raise CustomException("Token inválido o expirado", 401)
+
+    cuenta_id = payload.get("sub")
+    rol = payload.get("rol")
+    if cuenta_id is None:
+        raise CustomException("Token inválido", 401)
+
+    if rol == "usuario":
+        cuenta = UsuarioRepository().obtener_por_correo(db, int(cuenta_id))
+    elif rol == "psicologo":
+        cuenta = PsicologoRepository().obtener_psicologo_por_id(db, int(cuenta_id))
+    else:
+        raise CustomException("Token invalido", 401)
+
+    if not cuenta:
+        raise CustomException("Cuenta no encontrada", 404)
+    return cuenta

@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, UploadFile, File, status
 from sqlalchemy.orm import Session
 from Core.database import get_db
-from Core.deps import obtener_usuario_actual, obtener_psicologo_actual,obtener_usuario_opcional
+from Core.deps import obtener_usuario_actual, obtener_psicologo_actual,obtener_usuario_opcional, obtener_cuenta_autenticada
+from Core.exception import CustomException
 from typing import List
 
 from Schema.PsicologoSchema import PsicologoCreate, PsicologoResponse
@@ -41,7 +42,7 @@ like_Service = LikeService()
 # -------------------------------------------------------------------
 
 @router.get("/psicologos", response_model=List[PsicologoResponse], tags=["Psicólogos"])
-def get_psicologos(db: Session = Depends(get_db)):
+def get_psicologos(cuenta = Depends(obtener_cuenta_autenticada), db: Session = Depends(get_db)):
     return psicologo_service.listar_psicologos(db)
 
 @router.post("/psicologos", response_model=PsicologoResponse, tags=["Psicólogos"])
@@ -49,7 +50,7 @@ def crear_psicologo(data: PsicologoCreate, db: Session = Depends(get_db)):
     return psicologo_service.crear_psicologo(db, data)
 
 @router.get("/psicologos/{id}", response_model=PsicologoResponse, tags=["Psicólogos"])
-def obtener_psicologo(id: int, db: Session = Depends(get_db)):
+def obtener_psicologo(id: int, cuenta = Depends(obtener_cuenta_autenticada), db: Session = Depends(get_db)):
     return psicologo_service.obtener_psicologo_por_id(db, id)
 
 @router.get("/psicologos/mias/citas", response_model=List[CitasResponse], tags=["Psicólogos"])
@@ -73,16 +74,18 @@ async def subir_foto(file: UploadFile = File(...),psicologo_actual = Depends(obt
 # Usuarios
 # -------------------------------------------------------------------
 
-@router.get("/usuarios", response_model=List[UsuarioResponse], tags=["Usuarios"])
+@router.get("/usuarios/total", tags=["Usuarios"])
 def get_usuarios(db: Session = Depends(get_db)):
-    return usuario_service.listar_usuarios(db)
+    return {"total_usuarios":len( usuario_service.listar_usuarios(db))}
 
 @router.post("/usuarios", response_model=UsuarioResponse, tags=["Usuarios"])
 def crear_usuario(data: UsuarioCreate, db: Session = Depends(get_db)):
     return usuario_service.crear_usuario(db, data)
 
 @router.get("/usuarios/{id}", response_model=UsuarioResponse, tags=["Usuarios"])
-def obtener_usuario(id: int, db: Session = Depends(get_db)):
+def obtener_usuario(id: int, usuario_actual=Depends(obtener_usuario_actual), db: Session = Depends(get_db)):
+    if id != usuario_actual.id:
+        raise CustomException("No tienes permiso para acceder a este usuario", 403)
     return usuario_service.obtener_usuario_por_id(db, id)
 
 @router.post("/login", response_model=LoginResponse, tags=["Usuarios"])
@@ -102,8 +105,8 @@ def crear_cita(
     return citas_service.crear_cita(db, data, usuario_actual)
 
 @router.get("/citas/{id}", response_model=CitasResponse, tags=["Citas"])
-def obtener_cita(id: int, db: Session = Depends(get_db)):
-    return citas_service.obtener_cita_por_id(db, id)
+def obtener_cita(id: int, cuenta = Depends(obtener_cuenta_autenticada), db: Session = Depends(get_db)):
+    return citas_service.obtener_cita_de_cuenta(db, id, cuenta)
 
 @router.get("/citas/mias/todas", response_model=List[CitasResponse], tags=["Citas"])
 def mis_citas(
