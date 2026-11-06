@@ -1,6 +1,6 @@
-import os
-import uuid
 from fastapi import UploadFile
+import os
+from service.storage_service import StorageService
 
 from repositories.Psicologo import PsicologoRepository
 from repositories.localidad import LocalidadRepository
@@ -72,29 +72,5 @@ class PsicologoService:
 
     async def actualizar_foto_perfil(self, db, psicologo_id: int, file: UploadFile):
         psicologo = self.obtener_psicologo_por_id(db, psicologo_id)
-        ext = file.filename.split(".")[-1].lower()
-        if ext not in ["jpg", "jpeg", "png", "webp"]:
-            raise CustomException(status_code=400, message="Formato de imagen no permitido. Usa JPG, PNG o WEBP.")
-        file_path = f"avatars/psicologo_{psicologo_id}_{uuid.uuid4().hex[:6]}.{ext}"
-        content = await file.read()
-
-        try:
-            supabase.storage.from_(BUCKET_NAME).upload(
-                path=file_path,
-                file=content,
-                file_options={"content-type": file.content_type, "upsert": "true"}
-            )
-        except Exception as e:
-            raise CustomException(
-                status_code=500,
-                message=f"Error al subir la imagen: {str(e)}"
-            )
-        foto_url_publica = supabase.storage.from_(BUCKET_NAME).get_public_url(file_path)
-        psicologo.imagen = foto_url_publica
-        db.commit()
-        db.refresh(psicologo)
-
-        return {
-            "message": "Foto de perfil actualizada exitosamente",
-            "foto_url": foto_url_publica
-        }
+        url = await StorageService.subir_foto_psicologo(file, psicologo.id)
+        return self.psicologo_repository.actualizar_foto_perfil(db, psicologo.id, url)
