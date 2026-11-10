@@ -14,7 +14,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 if not SECRET_KEY:
     raise RuntimeError("SECRET_KEY no está definida en el archivo .env")
 
-#pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+ADMIN_CORREOS = {c.strip().lower() for c in os.getenv("ADMIN_CORREOS", "").split(",") if c.strip()}
 
 
 def hash_password(password: str) -> str:
@@ -51,3 +51,6 @@ def decode_access_token(token: str) -> dict:
     except JWTError as e:
         print("error", e)
         raise ValueError("Token inválido o expirado")
+
+def es_correo_admin(correo: str) -> bool:
+    return bool(correo) and correo.strip().lower() in ADMIN_CORREOS

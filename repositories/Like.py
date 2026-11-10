@@ -1,61 +1,66 @@
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from Models.LikeModels import ComentarioLike
+from Models.LikeModels import ComentarioLike, RespuestaLike
 
 
 class LikeRepository:
+    """Likes de comentarios (por defecto) o de respuestas:
+        LikeRepository()                              -> comentarios
+        LikeRepository(RespuestaLike, "respuesta_id") -> respuestas
+    """
 
-    def obtener(self, db: Session, usuario_id: int, comentario_id: int) -> ComentarioLike | None:
+    def __init__(self, modelo=ComentarioLike, campo: str = "comentario_id"):
+        self.modelo = modelo
+        self.campo = getattr(modelo, campo)  # la columna: ComentarioLike.comentario_id o RespuestaLike.respuesta_id
+
+    def obtener(self, db: Session, usuario_id: int, objeto_id: int):
         return (
-            db.query(ComentarioLike)
-            .filter(
-                ComentarioLike.usuario_id == usuario_id,
-                ComentarioLike.comentario_id == comentario_id,
-            )
+            db.query(self.modelo)
+            .filter(self.modelo.usuario_id == usuario_id, self.campo == objeto_id)
             .first()
         )
 
-    def crear(self, db: Session, usuario_id: int, comentario_id: int) -> None:
-        db.add(ComentarioLike(usuario_id=usuario_id, comentario_id=comentario_id))
+    def crear(self, db: Session, usuario_id: int, objeto_id: int) -> None:
+        db.add(self.modelo(**{"usuario_id": usuario_id, self.campo.key: objeto_id}))
         try:
             db.commit()
         except IntegrityError:
             # doble clic rápido: el like ya existía, no es un error
             db.rollback()
 
-    def eliminar(self, db: Session, like: ComentarioLike) -> None:
+    def eliminar(self, db: Session, like) -> None:
         db.delete(like)
         db.commit()
 
-    def contar(self, db: Session, comentario_id: int) -> int:
+    def contar(self, db: Session, objeto_id: int) -> int:
         return (
-            db.query(func.count(ComentarioLike.id))
-            .filter(ComentarioLike.comentario_id == comentario_id)
+            db.query(func.count(self.modelo.id))
+            .filter(self.campo == objeto_id)
             .scalar()
             or 0
         )
 
-    def contar_por_comentarios(self, db: Session, ids: list[int]) -> dict[int, int]:
+    def contar_por_ids(self, db: Session, ids: list[int]) -> dict[int, int]:
         if not ids:
             return {}
         filas = (
-            db.query(ComentarioLike.comentario_id, func.count(ComentarioLike.id))
-            .filter(ComentarioLike.comentario_id.in_(ids))
-            .group_by(ComentarioLike.comentario_id)
+            db.query(self.campo, func.count(self.modelo.id))
+            .filter(self.campo.in_(ids))
+            .group_by(self.campo)
             .all()
         )
-        return {comentario_id: total for comentario_id, total in filas}
+        return {objeto_id: total for objeto_id, total in filas}
+
+    # nombre anterior: se conserva para no tocar ComentarioService
+    contar_por_comentarios = contar_por_ids
 
     def ids_con_like_de_usuario(self, db: Session, usuario_id: int, ids: list[int]) -> set[int]:
         if not ids:
             return set()
         filas = (
-            db.query(ComentarioLike.comentario_id)
-            .filter(
-                ComentarioLike.usuario_id == usuario_id,
-                ComentarioLike.comentario_id.in_(ids),
-            )
+            db.query(self.campo)
+            .filter(self.modelo.usuario_id == usuario_id, self.campo.in_(ids))
             .all()
         )
         return {fila[0] for fila in filas}

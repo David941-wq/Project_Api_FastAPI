@@ -12,3 +12,5 @@ class LoginResponse(BaseModel):
     usuario_id: int | None = None
     psicologo_id: int | None = None
     nombre: str
+    es_admin: bool = False
+    rol: str = "usuario"

@@ -1,6 +1,6 @@
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
-from Core.security import decode_access_token
+from Core.security import decode_access_token, es_correo_admin
 from Core.exception import CustomException
 from Core.database import get_db
 from repositories.Usuario import UsuarioRepository
@@ -18,13 +18,15 @@ def obtener_usuario_actual(token: str = Depends(oauth2_scheme), db=Depends(get_d
 
     usuario_id = payload.get("sub")
     rol = payload.get("rol")
-    if usuario_id is None or rol != "usuario":
+    if usuario_id is None or rol not in ("usuario", "psicologo"):
         raise CustomException("Token inválido", 401)
+    if rol != "usuario":
+        raise CustomException("Solo lo pueden realizar usuarios", 403)
 
     usuario_repo = UsuarioRepository()
     usuario = usuario_repo.obtener_por_id(db, int(usuario_id))
     if not usuario:
-        raise CustomException("Usuario no encontrado", 404)
+        raise CustomException("Usuario no encontrado", 401)
     return usuario
 
 
@@ -36,13 +38,15 @@ def obtener_psicologo_actual(token: str = Depends(oauth2_scheme), db=Depends(get
 
     psicologo_id = payload.get("sub")
     rol = payload.get("rol")
-    if psicologo_id is None or rol != "psicologo":
+    if psicologo_id is None or rol not in ("usuario", "psicologo"):
         raise CustomException("Token inválido", 401)
+    if rol != "psicologo":
+        raise CustomException("Solo lo pueden realizar psicologos", 403)
 
     psicologo_repo = PsicologoRepository()
     psicologo = psicologo_repo.obtener_psicologo_por_id(db, int(psicologo_id))
     if not psicologo:
-        raise CustomException("Psicólogo no encontrado", 404)
+        raise CustomException("Psicólogo no encontrado", 401)
     return psicologo
 
 def obtener_usuario_opcional(token: str | None = Depends(oauth2_opcional), db=Depends(get_db)):
@@ -79,3 +83,8 @@ def obtener_cuenta_autenticada(token: str = Depends(oauth2_scheme), db=Depends(g
     if not cuenta:
         raise CustomException("Cuenta no encontrada", 404)
     return cuenta
+
+def obtener_admin_actual(usuario=Depends(obtener_usuario_actual)):
+    if not es_correo_admin(usuario.correo):
+        raise CustomException("No tiene permiso para realizar esta accion", 403)
+    return usuario

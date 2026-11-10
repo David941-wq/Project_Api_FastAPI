@@ -9,7 +9,7 @@ from Models.PsicologosModels import Psicologo
 from Models.CitasModels import Cita, EstadoCita
 from Models.ComentariosModels import Comentario
 from Models.RespuestasModels import RespuestaComentario
-from Models.LikeModels import ComentarioLike
+from Models.LikeModels import ComentarioLike, RespuestaLike
 
 __all__ = [
     "Localidad",
@@ -21,4 +21,5 @@ __all__ = [
     "Comentario",
     "RespuestaComentario",
     "ComentarioLike",
+    "RespuestaLike",
 ]

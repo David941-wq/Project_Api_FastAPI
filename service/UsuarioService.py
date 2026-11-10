@@ -1,7 +1,7 @@
 from repositories.Usuario import UsuarioRepository
 from repositories.localidad import LocalidadRepository
 from Models.UserModels import Usuario
-from Core.security import hash_password, verify_password, create_access_token
+from Core.security import hash_password, verify_password, create_access_token, es_correo_admin
 from Core.exception import CustomException
 
 
@@ -46,7 +46,8 @@ class UsuarioService:
             "access_token": token,
             "token_type": "bearer",
             "usuario_id": usuario.id,
-            "nombre": usuario.nombre
+            "nombre": usuario.nombre,
+            "es_admin": es_correo_admin(usuario.correo)
         }
 
     def cambiar_password(self, db, usuario_id, nueva_password_plana: str):

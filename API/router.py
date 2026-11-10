@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, UploadFile, File, status
 from sqlalchemy.orm import Session
 from Core.database import get_db
-from Core.deps import obtener_usuario_actual, obtener_psicologo_actual,obtener_usuario_opcional, obtener_cuenta_autenticada
+from Core.deps import obtener_usuario_actual, obtener_psicologo_actual,obtener_usuario_opcional, obtener_cuenta_autenticada, obtener_admin_actual
 from Core.exception import CustomException
 from typing import List
 
@@ -13,8 +13,7 @@ from Schema.loginSchema import LoginResponse, LoginCreate
 from Schema.LocalidadSchema import LocalidadResponse
 from Schema.ComentarioSchema import (
     ComentarioCreate, ComentarioResponse, ComentarioConLikesResponse, LikeResponse,
-    RespuestaComentarioCreate, RespuestaComentarioResponse,
-    ContenidoUpdate
+    RespuestaComentarioCreate, RespuestaComentarioResponse,RespuestaConLikesResponse, LikeRespuestaResponse, ContenidoUpdate
 )
 
 from service.PsicologoService import PsicologoService
@@ -25,6 +24,7 @@ from service.LocalidadService import LocalidadService
 from service.ComentarioService import ComentarioService
 from service.RespuestaComentarioService import RespuestaComentarioService
 from service.LikeService import LikeService
+from service.AuthService import AuthService
 
 router = APIRouter()
 
@@ -35,22 +35,23 @@ numero_e_service = NumeroEService()
 localidad_service = LocalidadService()
 comentario_service = ComentarioService()
 respuesta_service = RespuestaComentarioService()
-like_Service = LikeService()
+like_service = LikeService()
+auth_service = AuthService()
 
 # -------------------------------------------------------------------
 # Psicólogos
 # -------------------------------------------------------------------
 
 @router.get("/psicologos", response_model=List[PsicologoResponse], tags=["Psicólogos"])
-def get_psicologos(cuenta = Depends(obtener_cuenta_autenticada), db: Session = Depends(get_db)):
+def get_psicologos(usuario_actual = Depends(obtener_usuario_actual), db: Session = Depends(get_db)):
     return psicologo_service.listar_psicologos(db)
 
 @router.post("/psicologos", response_model=PsicologoResponse, tags=["Psicólogos"])
-def crear_psicologo(data: PsicologoCreate, db: Session = Depends(get_db)):
+def crear_psicologo(data: PsicologoCreate,admin=Depends(obtener_admin_actual), db: Session = Depends(get_db)):
     return psicologo_service.crear_psicologo(db, data)
 
 @router.get("/psicologos/{id}", response_model=PsicologoResponse, tags=["Psicólogos"])
-def obtener_psicologo(id: int, cuenta = Depends(obtener_cuenta_autenticada), db: Session = Depends(get_db)):
+def obtener_psicologo(id: int, usuario_actual = Depends(obtener_usuario_actual), db: Session = Depends(get_db)):
     return psicologo_service.obtener_psicologo_por_id(db, id)
 
 @router.get("/psicologos/mias/citas", response_model=List[CitasResponse], tags=["Psicólogos"])
@@ -90,7 +91,7 @@ def obtener_usuario(id: int, usuario_actual=Depends(obtener_usuario_actual), db:
 
 @router.post("/login", response_model=LoginResponse, tags=["Usuarios"])
 def login(datos: LoginCreate, db: Session = Depends(get_db)):
-    return usuario_service.login(db, datos)
+    return auth_service.login(db, datos)
 
 # -------------------------------------------------------------------
 # Citas
@@ -179,13 +180,13 @@ def crear_comentario(
 def listar_comentarios(usuario_actual=Depends(obtener_usuario_opcional), db: Session = Depends(get_db)):
     return comentario_service.listar_cometarios_con_likes(db, usuario_actual)
 
-@router.post("/comentarios/{id}/Like", response_model=LikeResponse, tags=["Comentarios"])
+@router.post("/comentarios/{id}/like", response_model=LikeResponse, tags=["Comentarios"])
 def alternar_like(
     id: int,
     usuario_actual=Depends(obtener_usuario_actual),
     db: Session = Depends(get_db)
 ):
-    return like_Service.alternar_like(db, id, usuario_actual)
+    return like_service.alternar_like(db, id, usuario_actual)
 
 @router.get("/comentarios/{id}", response_model=ComentarioResponse, tags=["Comentarios"])
 def obtener_comentario(id: int, db: Session = Depends(get_db)):
@@ -222,11 +223,23 @@ def crear_respuesta(
 
 @router.get(
     "/respuestas/comentario/{comentario_id}",
-    response_model=List[RespuestaComentarioResponse],
+    response_model=List[RespuestaConLikesResponse],
     tags=["Respuestas"]
 )
-def listar_respuestas(comentario_id: int, db: Session = Depends(get_db)):
-    return respuesta_service.listar_respuestas_por_comentario(db, comentario_id)
+def listar_respuestas(
+    comentario_id: int,
+    usuario_actual=Depends(obtener_usuario_opcional),
+    db: Session = Depends(get_db)
+):
+    return respuesta_service.listar_respuestas_con_likes(db, comentario_id, usuario_actual)
+
+@router.post("/respuestas/{id}/like", response_model=LikeRespuestaResponse, tags=["Respuestas"])
+def alternar_like_respuesta(
+    id: int,
+    usuario_actual=Depends(obtener_usuario_actual),
+    db: Session = Depends(get_db)
+):
+    return respuesta_service.alternar_like(db, id, usuario_actual)
 
 @router.put("/respuestas/{id}", response_model=RespuestaComentarioResponse, tags=["Respuestas"])
 def actualizar_respuesta(
